@@ -11,7 +11,7 @@ pipeline {
             steps {
                 sh '''
                     cd terraform-eks
-                    cp files/variables.tf .
+                    #cp files/variables.tf .
                     cat variables.tf
                 '''
             }
@@ -19,16 +19,16 @@ pipeline {
         stage('Creating The Credentials') {
             steps {
                 sh '''
+                    cd terraform-eks
+
                     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                           export AWS_DEFAULT_REGION=us-east-1" \
                           | tee creds
 
-                    #source creds
+                    source creds
                     
-                    cd terraform-eks
-                    
-                    cp files/provider.tf .
+                    #cp files/provider.tf .
                     
                     cat provider.tf
                     
