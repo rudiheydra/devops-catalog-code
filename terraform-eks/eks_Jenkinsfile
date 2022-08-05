@@ -32,7 +32,7 @@ pipeline {
                     
                     cat provider.tf
                     
-                    terraform apply
+                    #terraform apply
                     terraform init
                     terraform apply
                 '''
