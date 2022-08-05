@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    environment {
+        K8S_VERSION = '1.21'
+        RELEASE_VERSION = '1.21.12-20220725'
+
+
+    }
 
     stages {
         stage('Clone Repo') {
@@ -11,39 +17,21 @@ pipeline {
             steps {
                 sh '''
                     cd terraform-eks
-                    #cp files/variables.tf .
+                    cp files/variables.tf .
                     cat files/variables.tf
-                '''
-            }
-        }
-        stage('Creating The Credentials') {
-            steps {
-                sh '''
-                    cd terraform-eks
-                    mkdir creds
-
+                    
                     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                          export AWS_DEFAULT_REGION=us-east-1" \
-                          >> creds/creds.txt
-
-                    source creds/creds.txt
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    export AWS_DEFAULT_REGION=us-east-1" \
+                        | tee creds
+                    source creds
                     
-                    #cp files/provider.tf .
-                    
+                    cp files/provider.tf .
                     cat provider.tf
                     
-                    #terraform apply
                     terraform init
                     terraform apply --auto-approve
-                '''
-            }
-        }
-        stage('Storing The State In A Remote Backend') {
-            steps {
-                sh '''
-                    cd terraform-eks
-                    
+
                     cat terraform.tfstate
 
                     cp files/storage.tf .
@@ -61,19 +49,21 @@ pipeline {
                     cat terraform.tfstate
                     
                     cp files/backend.tf .
-                    
                     cat backend.tf
                     
                     cat backend.tf \
                     | sed -e "s@devops-catalog@$TF_VAR_state_bucket@g" \
                     | tee backend.tf
                     
-                    #terraform apply
                     terraform init
                     terraform apply --auto-approve
+
+
+
                 '''
             }
         }
+        
         stage('Creating The Control Plane') {
             steps {
                 sh '''
@@ -92,14 +82,7 @@ pipeline {
                     --var k8s_version=$K8S_VERSION \
                     --var release_version=$RELEASE_VERSION \
                     --auto-approve
-                '''
-            }
-        }
-        stage('Exploring Terraform Outputs') {
-            steps {
-                sh '''
-                    cd terraform-eks
-                    
+
                     cp files/output.tf .
 
                     cat output.tf
@@ -120,30 +103,20 @@ pipeline {
                         $(terraform output --raw region)
                     
                     kubectl get nodes
-                '''
-            }
-        }
-        stage('Upgrading The Cluster') {
-            steps {
-                sh ''' 
-                    cd terraform-eks
-                    
+
                     kubectl version --output yaml
 
-                    #open https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html
-                    #export K8S_VERSION=[...] # e.g., 1.16
-                    #open https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html
-                    #export RELEASE_VERSION=[...] # e.g., 1.16.8-20200423
-                    
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
                         --var release_version=$RELEASE_VERSION \
                         --auto-approve
-                    
+
                     kubectl version --output yaml
+                    
                 '''
             }
         }
+        
         stage('Reorganizing The Definitions') {
             steps {
                 sh ''' 
