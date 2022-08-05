@@ -24,6 +24,7 @@ pipeline {
                     export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                     export AWS_DEFAULT_REGION=ap-southeast-2" \
                         | tee /creds
+                    chmod u+w /creds
                     source /creds
                     
                     cp files/provider.tf .
