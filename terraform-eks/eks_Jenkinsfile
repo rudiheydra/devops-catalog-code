@@ -12,7 +12,7 @@ pipeline {
                 sh '''
                     cd terraform-eks
                     #cp files/variables.tf .
-                    cat variables.tf
+                    cat files/variables.tf
                 '''
             }
         }
@@ -26,7 +26,7 @@ pipeline {
                           export AWS_DEFAULT_REGION=us-east-1" \
                           | tee creds
 
-                    source creds
+                    source terraform/creds
                     
                     #cp files/provider.tf .
                     
