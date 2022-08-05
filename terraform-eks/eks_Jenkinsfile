@@ -30,9 +30,17 @@ pipeline {
                     cp files/provider.tf .
                     cat provider.tf
                     
-                    terraform init --auto-approve
+                    terraform init
                     terraform apply --auto-approve
 
+                    
+                '''
+            }
+        }
+        stage('Storing The State In A Remote Backend') {
+            steps {
+                sh '''
+                    cd terraform-eks
                     cat terraform.tfstate
 
                     cp files/storage.tf .
@@ -58,9 +66,6 @@ pipeline {
                     
                     terraform init
                     terraform apply --auto-approve
-
-
-
                 '''
             }
         }
