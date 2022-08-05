@@ -65,11 +65,23 @@ pipeline {
                     | tee backend.tf
                     
                     terraform init
-                    terraform apply --auto-approve
+                    
                 '''
             }
         }
-        
+        stage('TF init') {
+            // only execute stage if apply is desired
+            when { expression { return env.Action == 'init' } }
+            steps {
+            // query for user approval of plan
+            input(message: 'Click "proceed" to approve the above Terraform Init')
+            // apply the plan if approved
+            sh(
+                label:  'Terraform Init',
+                script: 'terraform init -input=false -no-color plan.tfplan, terraform apply --auto-approve'
+            )
+            }
+        }
         stage('Creating The Control Plane') {
             steps {
                 sh '''
