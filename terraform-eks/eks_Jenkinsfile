@@ -23,8 +23,8 @@ pipeline {
                     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                     export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                     export AWS_DEFAULT_REGION=us-east-1" \
-                        | tee creds
-                    source creds
+                        | tee /var/lib/jenkins/workspace/terraform-aws-k8s/creds
+                    source /var/lib/jenkins/workspace/terraform-aws-k8s/creds
                     
                     cp files/provider.tf .
                     cat provider.tf
