@@ -9,16 +9,16 @@ pipeline {
         }
         stage('Terraform provision') {
             steps {
-                sh """
+                sh '''
                     cd terraform-eks
                     cp files/variables.tf .
                     cat variables.tf
-                """
+                '''
             }
         }
         stage('Creating The Credentials') {
             steps {
-                sh """
+                sh '''
                     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                           export AWS_DEFAULT_REGION=us-east-1" \
@@ -33,19 +33,19 @@ pipeline {
                     terraform apply
                     terraform init
                     terraform apply
-                """
+                '''
             }
         }
         stage('Storing The State In A Remote Backend') {
             steps {
-                sh """
+                sh '''
                     cat terraform.tfstate
 
                     cp files/storage.tf .
                     
                     cat storage.tf
                     
-                    export TF_VAR_state_bucket=doc-$(date +%Y%m%d%H%M%S)
+                    export TF_VAR_state_bucket=doc-"$(date +%Y%m%d%H%M%S)"
                     
                     terraform apply
                     
@@ -66,12 +66,12 @@ pipeline {
                     terraform apply
                     terraform init
                     terraform apply
-                """
+                '''
             }
         }
         stage('Creating The Control Plane') {
             steps {
-                sh """
+                sh '''
                     cp files/k8s-control-plane.tf .
 
                     cat k8s-control-plane.tf
@@ -84,12 +84,12 @@ pipeline {
                     terraform apply \
                     --var k8s_version=$K8S_VERSION \
                     --var release_version=$RELEASE_VERSION
-                """
+                '''
             }
         }
         stage('Exploring Terraform Outputs') {
             steps {
-                sh """
+                sh '''
                     cp files/output.tf .
 
                     cat output.tf
@@ -109,12 +109,12 @@ pipeline {
                         $(terraform output --raw region)
                     
                     kubectl get nodes
-                """
+                '''
             }
         }
         stage('Upgrading The Cluster') {
             steps {
-                sh """ 
+                sh ''' 
                     kubectl version --output yaml
 
                     #open https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html
@@ -127,12 +127,12 @@ pipeline {
                         --var release_version=$RELEASE_VERSION
                     
                     kubectl version --output yaml
-                """
+                '''
             }
         }
         stage('Reorganizing The Definitions') {
             steps {
-                sh """ 
+                sh ''' 
                     rm -f *.tf
 
                     cat \
@@ -158,7 +158,7 @@ pipeline {
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
                         --var release_version=$RELEASE_VERSION
-                """
+                '''
             }
         }
         stage('License to Kill?') {
