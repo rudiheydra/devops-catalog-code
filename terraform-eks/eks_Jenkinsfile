@@ -26,6 +26,8 @@ pipeline {
 
                     #source creds
                     
+                    cd terraform-eks
+                    
                     cp files/provider.tf .
                     
                     cat provider.tf
@@ -39,6 +41,8 @@ pipeline {
         stage('Storing The State In A Remote Backend') {
             steps {
                 sh '''
+                    cd terraform-eks
+                    
                     cat terraform.tfstate
 
                     cp files/storage.tf .
@@ -72,6 +76,8 @@ pipeline {
         stage('Creating The Control Plane') {
             steps {
                 sh '''
+                    cd terraform-eks
+                    
                     cp files/k8s-control-plane.tf .
 
                     cat k8s-control-plane.tf
@@ -90,6 +96,8 @@ pipeline {
         stage('Exploring Terraform Outputs') {
             steps {
                 sh '''
+                    cd terraform-eks
+                    
                     cp files/output.tf .
 
                     cat output.tf
@@ -115,6 +123,8 @@ pipeline {
         stage('Upgrading The Cluster') {
             steps {
                 sh ''' 
+                    cd terraform-eks
+                    
                     kubectl version --output yaml
 
                     #open https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html
@@ -133,6 +143,8 @@ pipeline {
         stage('Reorganizing The Definitions') {
             steps {
                 sh ''' 
+                    cd terraform-eks
+                    
                     rm -f *.tf
 
                     cat \
