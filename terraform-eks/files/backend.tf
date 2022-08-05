@@ -7,7 +7,7 @@ resource "random_string" "random" {
 
 terraform {
   backend "s3" {
-    bucket = "devops-catalog-${random_string.random.result}"
+    bucket = "devops-catalog-1"
     key    = "terraform/state"
   }
 }
