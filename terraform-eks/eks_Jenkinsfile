@@ -34,7 +34,7 @@ pipeline {
                     
                     #terraform apply
                     terraform init
-                    terraform apply
+                    terraform apply --auto-approve
                 '''
             }
         }
@@ -67,9 +67,9 @@ pipeline {
                     | sed -e "s@devops-catalog@$TF_VAR_state_bucket@g" \
                     | tee backend.tf
                     
-                    terraform apply
+                    #terraform apply
                     terraform init
-                    terraform apply
+                    terraform apply --auto-approve
                 '''
             }
         }
@@ -89,7 +89,8 @@ pipeline {
 
                     terraform apply \
                     --var k8s_version=$K8S_VERSION \
-                    --var release_version=$RELEASE_VERSION
+                    --var release_version=$RELEASE_VERSION \
+                    --auto-approve
                 '''
             }
         }
@@ -104,7 +105,8 @@ pipeline {
 
                     terraform refresh \
                         --var k8s_version=$K8S_VERSION \
-                        --var release_version=$RELEASE_VERSION
+                        --var release_version=$RELEASE_VERSION \
+                        --auto-approve
                     
                     terraform output cluster_name
                     
@@ -134,7 +136,8 @@ pipeline {
                     
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
-                        --var release_version=$RELEASE_VERSION
+                        --var release_version=$RELEASE_VERSION \
+                        --auto-approve
                     
                     kubectl version --output yaml
                 '''
@@ -169,7 +172,8 @@ pipeline {
 
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
-                        --var release_version=$RELEASE_VERSION
+                        --var release_version=$RELEASE_VERSION \
+                        --auto-approve
                 '''
             }
         }
