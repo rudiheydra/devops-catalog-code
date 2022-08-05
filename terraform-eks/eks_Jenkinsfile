@@ -24,7 +24,7 @@ pipeline {
                           export AWS_DEFAULT_REGION=us-east-1" \
                           | tee creds
 
-                    source creds
+                    #source creds
                     
                     cp files/provider.tf .
                     
