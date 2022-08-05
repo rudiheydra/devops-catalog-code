@@ -30,7 +30,7 @@ pipeline {
                     cp files/provider.tf .
                     cat provider.tf
                     
-                    terraform init
+                    terraform init --auto-approve
                     terraform apply --auto-approve
 
                     cat terraform.tfstate
