@@ -51,7 +51,7 @@ pipeline {
                     
                     export TF_VAR_state_bucket=doc-"$(date +%Y%m%d%H%M%S)"
                     
-                    terraform apply
+                    terraform apply --auto-approve
                     
                     aws s3api list-buckets
                     
