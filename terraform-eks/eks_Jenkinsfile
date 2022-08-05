@@ -63,14 +63,12 @@ pipeline {
                     cat backend.tf \
                     | sed -e "s@devops-catalog@$TF_VAR_state_bucket@g" \
                     | tee backend.tf
-                    
-                    terraform init
-                    
+                                                            
                 '''
             }
         }
         stage('TF init') {
-            // only execute stage if apply is desired
+            // only execute stage if init is desired
             when { expression { return env.Action == 'init' } }
             steps {
             // query for user approval of plan
