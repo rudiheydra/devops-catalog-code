@@ -55,7 +55,7 @@ pipeline {
                     | sed -e "s@devops-catalog@$TF_VAR_state_bucket@g" \
                     | tee backend.tf
                     
-                    terraform init
+                    #terraform init
                     terraform apply --auto-approve
 
 
