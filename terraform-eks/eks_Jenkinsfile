@@ -13,94 +13,128 @@ pipeline {
                     cd terraform-eks
                     cp files/variables.tf .
                     cat variables.tf
-
-                    ############################
-                    # Creating The Credentials #
-                    ############################
-
+                """
+            }
+        }
+        stage('Creating The Credentials') {
+            steps {
+                sh """
                     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                           export AWS_DEFAULT_REGION=us-east-1" \
                           | tee creds
+
                     source creds
+                    
                     cp files/provider.tf .
+                    
                     cat provider.tf
+                    
                     terraform apply
                     terraform init
                     terraform apply
-
-                    #########################################
-                    # Storing The State In A Remote Backend #
-                    #########################################
-
-                    cat terraform.tfstate 
-                    cp files/storage.tf .
-                    cat storage.tf
-                    export TF_VAR_state_bucket=doc-$(date +%Y%m%d%H%M%S)
-                    terraform apply
-                    aws s3api list-buckets
-                    terraform show
+                """
+            }
+        }
+        stage('Storing The State In A Remote Backend') {
+            steps {
+                sh """
                     cat terraform.tfstate
+
+                    cp files/storage.tf .
+                    
+                    cat storage.tf
+                    
+                    export TF_VAR_state_bucket=doc-$(date +%Y%m%d%H%M%S)
+                    
+                    terraform apply
+                    
+                    aws s3api list-buckets
+                    
+                    terraform show
+                    
+                    cat terraform.tfstate
+                    
                     cp files/backend.tf .
+                    
                     cat backend.tf
+                    
                     cat backend.tf \
                     | sed -e "s@devops-catalog@$TF_VAR_state_bucket@g" \
                     | tee backend.tf
+                    
                     terraform apply
                     terraform init
                     terraform apply
-
-                    ##############################
-                    # Creating The Control Plane #
-                    ##############################
-
+                """
+            }
+        }
+        stage('Creating The Control Plane') {
+            steps {
+                sh """
                     cp files/k8s-control-plane.tf .
+
                     cat k8s-control-plane.tf
+
                     #open https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html
                     #export K8S_VERSION=[...] # e.g., 1.15
                     #open https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html
                     #export RELEASE_VERSION=[...] # e.g., 1.15.11-20200423
+
                     terraform apply \
                     --var k8s_version=$K8S_VERSION \
                     --var release_version=$RELEASE_VERSION
-
-                    ###############################
-                    # Exploring Terraform Outputs #
-                    ###############################
-
+                """
+            }
+        }
+        stage('Exploring Terraform Outputs') {
+            steps {
+                sh """
                     cp files/output.tf .
+
                     cat output.tf
+
                     terraform refresh \
                         --var k8s_version=$K8S_VERSION \
                         --var release_version=$RELEASE_VERSION
+                    
                     terraform output cluster_name
+                    
                     export KUBECONFIG=$PWD/kubeconfig
+                    
                     aws eks update-kubeconfig \
                         --name \
                         $(terraform output --raw cluster_name) \
                         --region \
                         $(terraform output --raw region)
+                    
                     kubectl get nodes
-
-                    #########################
-                    # Upgrading The Cluster #
-                    #########################
-
+                """
+            }
+        }
+        stage('Upgrading The Cluster') {
+            steps {
+                sh """ 
                     kubectl version --output yaml
+
                     #open https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html
                     #export K8S_VERSION=[...] # e.g., 1.16
                     #open https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html
                     #export RELEASE_VERSION=[...] # e.g., 1.16.8-20200423
+                    
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
                         --var release_version=$RELEASE_VERSION
+                    
                     kubectl version --output yaml
-
-                    ################################
-                    # Reorganizing The Definitions #
-                    ################################
+                """
+            }
+        }
+        stage('Reorganizing The Definitions') {
+            steps {
+                sh """ 
                     rm -f *.tf
-    
+
                     cat \
                         files/backend.tf \
                         files/k8s-control-plane.tf \
@@ -124,9 +158,6 @@ pipeline {
                     terraform apply \
                         --var k8s_version=$K8S_VERSION \
                         --var release_version=$RELEASE_VERSION
-
-
-
                 """
             }
         }
